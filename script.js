@@ -13,7 +13,7 @@ const renderCountry = function (data, classlist = '') {
     <h3 class="country__name">${data.name.common}</h3>
     <h4 class="country__region">${data.region}</h4>
     <p class="country__row"><span>👫</span><strong>${(data.population / 10000000).toFixed(1)}M</strong> people</p>
-    <p class="country__row"><span>🗣️</span>${data.languages.eng }</p>
+    <p class="country__row"><span>🗣️</span>${data.languages.eng || data.languages.zho || data.languages.dzo || data.languages.mya || data.languages.ben || data.languages.nep}</p>
     <p class="country__row"><span>💰</span>${data.currencies}</p>
   </div >
 </article > `;
@@ -21,6 +21,9 @@ const renderCountry = function (data, classlist = '') {
   countriesContainer.insertAdjacentHTML('beforeend', html)
   countriesContainer.style.opacity = 1;
 }
+
+/////////////////XML request///////////////////
+
 // const showCountry = function (country) {
 //   const request = new XMLHttpRequest();
 //   request.open('GET', `https://restcountries.com/v3.1/name/${country}`);
@@ -53,25 +56,27 @@ const renderCountry = function (data, classlist = '') {
 // showCountry('india')
 // showCountry('usa')
 
-/// Promise 
+//////////////// Promise /////////////////////
 
 const getCountry = function (country) {
   fetch(`https://restcountries.com/v3.1/name/${country}`)
     .then((respone) => respone.json())
     .then((data) => {
-      renderCountry(data[1])
-      const neighbourCountry = data[1].borders;
-      const neighbour = neighbourCountry[Math.floor(Math.random() * 6)];
+      console.log(data)
+      renderCountry(data[0])
+      const neighbourCountry = data[0].borders;
+      const neighbour = neighbourCountry[Math.floor(Math.random() * 2)];
       console.log(neighbour)
 
-      if (!neighbour) return;
+
+      if (!neighbour) throw new Error(`Neighbour Not Found`);
 
       return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`)
     }).then((respone2) => respone2.json())
     .then((data) => {
       console.log(data[0])
-
       renderCountry(data[0], 'neighbour')
-    })
+    }).catch(err => console.error(err))
+
 }
-getCountry('india')
+getCountry('usa')
