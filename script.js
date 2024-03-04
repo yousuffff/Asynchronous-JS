@@ -13,7 +13,7 @@ const renderCountry = function (data, classlist = '') {
     <h3 class="country__name">${data.name.common}</h3>
     <h4 class="country__region">${data.region}</h4>
     <p class="country__row"><span>👫</span><strong>${(data.population / 10000000).toFixed(1)}M</strong> people</p>
-    <p class="country__row"><span>🗣️</span>${data.languages.eng || data.languages.zho || data.languages.dzo || data.languages.mya || data.languages.ben || data.languages.nep}</p>
+    <p class="country__row"><span>🗣️</span>${data.languages.eng || data.languages.zho || data.languages.dzo || data.languages.mya || data.languages.ben || data.languages.nep || data.languages.deu || data.languages.ces}</p>
     <p class="country__row"><span>💰</span>${data.currencies}</p>
   </div >
 </article > `;
@@ -58,25 +58,42 @@ const renderCountry = function (data, classlist = '') {
 
 //////////////// Promise /////////////////////
 
+const getJSON = function (url, errMsg = 'Something went wrong') {
+  return fetch(url).then(res => {
+    if (!res.ok) throw new Error(`${errMsg} , ${res.status}`);
+    return res.json()
+  })
+}
+const renderErr = function (err) {
+  countriesContainer.insertAdjacentText('afterbegin', err.message)
+  countriesContainer.style.opacity = 1;
+}
+
 const getCountry = function (country) {
-  fetch(`https://restcountries.com/v3.1/name/${country}`)
-    .then((respone) => respone.json())
+  getJSON(`https://restcountries.com/v3.1/name/${country}`, 'Country not found')
     .then((data) => {
       console.log(data)
-      renderCountry(data[1])
-      const neighbourCountry = data[1].borders;
-      const neighbour = neighbourCountry[Math.floor(Math.random() * 6)];
+      // renderCountry(data[1])
+      renderCountry(data[0])
+      // const neighbourCountry = data[1].borders;
+      const neighbourCountry = data[0].borders;
+      const neighbour = neighbourCountry[Math.floor(Math.random() * neighbourCountry.length)];
       console.log(neighbour)
 
 
       if (!neighbour) throw new Error(`Neighbour Not Found`);
 
-      return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`)
-    }).then((respone2) => respone2.json())
+      return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Neighbour not found')
+    })
     .then((data) => {
-      console.log(data[0])
+      console.log(data)
       renderCountry(data[0], 'neighbour')
-    }).catch(err => console.error(err))
+
+    }).catch(err => {
+      renderErr(err)
+
+    }).finally(
+  )
 
 }
 // getCountry('usa')
@@ -107,25 +124,86 @@ TEST COORDINATES 2: -33.933, 18.474
 
 GOOD LUCK 😀
 */
-
+const getPostion = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  })
+}
 const apiKey = `130584795852412e15925027x28664`
 
 const URL = `https://geocode.xyz/51.50354,-0.12768?geoit=xml&auth=${apiKey}`
 
-const whereAmI = function (lat, lng) {
-  fetch(`https://geocode.xyz/${lat},${lng}?geoit=json&auth=${apiKey}`)
-    .then(function (response) {
-      // console.log(response.json())
-      return response.json()
-    }).then(function (data) {
-      const country = data.country
-      console.log(country)
-      getCountry(country)
-    })
+const whereAmI = function () {
+  getPostion().then(res => {
+    const { latitude: lat, longitude: lng } = res.coords;
+    console.log(lat, lng)
+    return getJSON(`https://geocode.xyz/${lat},${lng}?geoit=json&auth=${apiKey}`)
+  }).then(function (data) {
+    const country = data.country
+    console.log(data)
+    getCountry(country)
+  }).catch(err => {
+    console.error(err)
+    renderErr(err)
+  })
 }
-whereAmI(`19.037`, `72.873`);
-// whereAmI(`52.508`, `13.381`);
-navigator.geolocation.getCurrentPosition(data => {
-  const { latitude, longitude } = data.coords
-  console.log(latitude, longitude)
-})
+// whereAmI(19.037, 72.873);
+// whereAmI(52.508, 13.381);
+// whereAmI()
+// navigator.geolocation.getCurrentPosition(data => {
+//   const { latitude, longitude } = data.coords
+//   console.log(latitude, longitude)
+// })
+
+// promisefying geolocation
+
+
+
+// getPostion().then(res => console.log(res.coords))
+
+///////////////////////////////////////
+// Coding Challenge #2
+
+/* 
+Build the image loading functionality that I just showed you on the screen.
+
+Tasks are not super-descriptive this time, so that you can figure out some stuff on your own. Pretend you're working on your own 😉
+
+PART 1
+1. Create a function 'createImage' which receives imgPath as an input. This function returns a promise which creates a new image (use document.createElement('img')) and sets the .src attribute to the provided image path. When the image is done loading, append it to the DOM element with the 'images' class, and resolve the promise. The fulfilled value should be the image element itself. In case there is an error loading the image ('error' event), reject the promise.
+
+If this part is too tricky for you, just watch the first part of the solution.
+
+PART 2
+2. Comsume the promise using .then and also add an error handler;
+3. After the image has loaded, pause execution for 2 seconds using the wait function we created earlier;
+4. After the 2 seconds have passed, hide the current image (set display to 'none'), and load a second image (HINT: Use the image element returned by the createImage promise to hide the current image. You will need a global variable for that 😉);
+5. After the second image has loaded, pause execution for 2 seconds again;
+6. After the 2 seconds have passed, hide the current image.
+
+TEST DATA: Images in the img folder. Test the error handler by passing a wrong image path. Set the network speed to 'Fast 3G' in the dev tools Network tab, otherwise images load too fast.
+
+GOOD LUCK 😀
+*/
+
+// promisefying setTimeout
+
+const wait = function (second) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, second * 1000);
+  })
+};
+
+// wait(1).then(() => {
+//   console.log('Print after 1 second')
+//   return wait(1)
+// }).then(() => {
+//   console.log('Print after 2 second')
+//   return wait(1)
+// }).then(() => {
+//   console.log('Print after 3 second')
+//   return wait(1)
+// }).then(() => {
+//   console.log('Print after 4 second')
+//   return wait(1)
+// })
