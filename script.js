@@ -311,4 +311,89 @@ const get3countries = async function (c1, c2, c3) {
     console.error(err)
   }
 }
-get3countries('uk', 'france', 'canada')
+  // get3countries('uk', 'france', 'canada');
+
+  /// note 
+  // in promise.all there is one catch , i mean one flaw and that is if one promise failed due to any error , all promise are gonna rejected.
+  // so keep this in mind 
+  // and we use promise.all when other promise not depend on first one so for decreasing loading time we load all promises at once
+  // That's it.
+
+  // Difference between these four promises
+  // Promise.all - promise.all short curcuit the opertion if any promise rejected mean throw error and stop
+  // Promise.allSettel - promise.allSettle keep working if their is and error in one of the priomises still completes all promises
+  // Promise.race - promise.race return promise which load first but if there is any promise rejected fisrt its return rejected promise
+  // Promise.any - work as same as promise.race but only return fulfilled promise and except the rejected one.
+  // lets see with example
+
+  ///////////////////////////////////////
+  // Other Promise Combinators: race, allSettled and any
+  // Promise.race
+  ; (async function () {
+    const res = await Promise.race([
+      getJSON(`https://restcountries.com/v3.1/name/egypt`),
+      getJSON(`https://restcountries.com/v3.1/name/italy`),
+      getJSON(`https://restcountries.com/v3.1/name/mexico`),
+    ]);
+    console.log(res[0]);
+  })();
+
+const timeout = function (sec) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error('Request took too long!'));
+    }, sec * 1000);
+  });
+};
+
+Promise.race([
+  getJSON(`https://restcountries.com/v3.1/name/italy`),
+  timeout(5),
+])
+  .then(res => console.log(res[0]))
+  .catch(err => console.error(err));
+
+// Promise.allSettled
+Promise.allSettled([
+  Promise.resolve('Success'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Another success'),
+]).then(res => console.log(res));
+
+Promise.all([
+  Promise.resolve('Success'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Another success'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+// Promise.any [ES2021]
+Promise.any([
+  Promise.resolve('Success'),
+  Promise.reject('ERROR'),
+  Promise.resolve('Another success'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.error(err));
+
+
+///////////////////////////////////////
+// Coding Challenge #3
+
+/* 
+PART 1
+Write an async function 'loadNPause' that recreates Coding Challenge #2, this time using async/await (only the part where the promise is consumed). Compare the two versions, think about the big differences, and see which one you like more.
+Don't forget to test the error handler, and to set the network speed to 'Fast 3G' in the dev tools Network tab.
+
+PART 2
+1. Create an async function 'loadAll' that receives an array of image paths 'imgArr';
+2. Use .map to loop over the array, to load all the images with the 'createImage' function (call the resulting array 'imgs')
+3. Check out the 'imgs' array in the console! Is it like you expected?
+4. Use a promise combinator function to actually get the images from the array 😉
+5. Add the 'paralell' class to all the images (it has some CSS styles).
+
+TEST DATA: ['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']. To test, turn off the 'loadNPause' function.
+
+GOOD LUCK 😀
+*/
