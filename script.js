@@ -208,39 +208,67 @@ const wait = function (second) {
 //   return wait(1)
 // })
 
-const imageContainer = document.querySelector('.images')
+// const imageContainer = document.querySelector('.images')
 
-const createImg = function (imgPath) {
-  return new Promise(function (resolve, reject) {
-    const img = document.createElement('img');
-    img.src = imgPath;
-    img.addEventListener('load', function () {
-      imageContainer.append(img);
-      resolve(img);
-    })
-    img.addEventListener('error', function () {
-      reject(new Error('Image Not Found'))
-    });
+// const createImg = function (imgPath) {
+//   return new Promise(function (resolve, reject) {
+//     const img = document.createElement('img');
+//     img.src = imgPath;
+//     img.addEventListener('load', function () {
+//       imageContainer.append(img);
+//       resolve(img);
+//     })
+//     img.addEventListener('error', function () {
+//       reject(new Error('Image Not Found'))
+//     });
 
 
-  })
+//   })
+// }
+// let currentImage;;
+// createImg('img/img-1.jpg')
+//   .then(img => {
+//     currentImage = img;
+//     console.log('Image 1 loaded')
+//     return wait(2)
+//   })
+//   .then(() => {
+//     currentImage.style.display = 'none';
+//     return createImg('img/img-2.jpg')
+//   }).then((img) => {
+//     currentImage = img;
+//     console.log('Image 2 loaded')
+//     return wait(2)
+//   }).then(() => {
+//     currentImage.style.display = 'none';
+//   }).catch(err => {
+//     console.error(err)
+//   })
+
+
+/////////////Async Await///////////
+
+const getPos = async function () {
+  try {
+    const pos = await getPostion();
+    console.log(pos)
+    const { latitude, longitude } = pos.coords;
+    console.log(latitude, longitude)
+    const country = await fetch(`https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=8a7abe0cbc8042b5a5442e359d26bee1`)
+    const count = await country.json()
+    const data = count.features[0].properties
+    console.log(data.country)
+    const res = await fetch(`https://restcountries.com/v3.1/name/${data.country}`);
+    const resData = await res.json();
+    const minidata = resData;
+    console.log(resData[1])
+    renderCountry(resData[1])
+  }
+  catch {
+    (err) => {
+      console.log(err)
+    }
+  }
 }
-let currentImage;;
-createImg('img/img-1.jpg')
-  .then(img => {
-    currentImage = img;
-    console.log('Image 1 loaded')
-    return wait(2)
-  })
-  .then(() => {
-    currentImage.style.display = 'none';
-    return createImg('img/img-2.jpg')
-  }).then((img) => {
-    currentImage = img;
-    console.log('Image 2 loaded')
-    return wait(2)
-  }).then(() => {
-    currentImage.style.display = 'none';
-  }).catch(err => {
-    console.error(err)
-  })
+
+getPos()
