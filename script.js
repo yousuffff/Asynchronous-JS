@@ -259,16 +259,56 @@ const getPos = async function () {
     const data = count.features[0].properties
     console.log(data.country)
     const res = await fetch(`https://restcountries.com/v3.1/name/${data.country}`);
+    if (!res.ok) throw new Error(`Country not found , ${res.status}`)
     const resData = await res.json();
-    const minidata = resData;
+    // const minidata = resData;
     console.log(resData[1])
     renderCountry(resData[1])
+
+    return `You are in ${data.city},${data.country}`
   }
-  catch {
-    (err) => {
-      console.log(err)
-    }
+  catch (err) {
+    console.error(err)
+    throw err;
+  }
+};
+//// bad practice to use promise with async await
+// getPos()
+//   .then(city => console.log(city))
+//   .catch(err => console.error(err))
+//   .finally(() => console.log('location get'))
+
+// we use IIFE with asyncx await
+// (async function () {
+//   try {
+//     const city = await getPos();
+//     console.log(city)
+//   } catch (err) {
+//     console.error(err)
+//   }
+//   console.log('location got')
+// })()
+
+//// get three countries data parallelly 
+
+const get3countries = async function (c1, c2, c3) {
+  try {
+    //   const data1 = await getJSON(`https://restcountries.com/v3.1/name/${c1}`)
+    //   const data2 = await getJSON(`https://restcountries.com/v3.1/name/${c2}`)
+    //   const data3 = await getJSON(`https://restcountries.com/v3.1/name/${c3}`)
+
+    //   console.log(data1[0].capital, data2[0].capital, data3[0].capital)
+
+    const data = await Promise.all([
+      getJSON(`https://restcountries.com/v3.1/name/${c1}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c2}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c3}`)
+    ]);
+
+    const capital = [data.map(d => d[0].capital), data.map(d => d[0].borders)]
+    console.log(capital);
+  } catch (err) {
+    console.error(err)
   }
 }
-
-getPos()
+get3countries('uk', 'france', 'canada')
