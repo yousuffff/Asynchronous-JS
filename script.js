@@ -311,71 +311,71 @@ const get3countries = async function (c1, c2, c3) {
     console.error(err)
   }
 }
-  // get3countries('uk', 'france', 'canada');
+// get3countries('uk', 'france', 'canada');
 
-  /// note 
-  // in promise.all there is one catch , i mean one flaw and that is if one promise failed due to any error , all promise are gonna rejected.
-  // so keep this in mind 
-  // and we use promise.all when other promise not depend on first one so for decreasing loading time we load all promises at once
-  // That's it.
+/// note 
+// in promise.all there is one catch , i mean one flaw and that is if one promise failed due to any error , all promise are gonna rejected.
+// so keep this in mind 
+// and we use promise.all when other promise not depend on first one so for decreasing loading time we load all promises at once
+// That's it.
 
-  // Difference between these four promises
-  // Promise.all - promise.all short curcuit the opertion if any promise rejected mean throw error and stop
-  // Promise.allSettel - promise.allSettle keep working if their is and error in one of the priomises still completes all promises
-  // Promise.race - promise.race return promise which load first but if there is any promise rejected fisrt its return rejected promise
-  // Promise.any - work as same as promise.race but only return fulfilled promise and except the rejected one.
-  // lets see with example
+// Difference between these four promises
+// Promise.all - promise.all short curcuit the opertion if any promise rejected mean throw error and stop
+// Promise.allSettel - promise.allSettle keep working if their is and error in one of the priomises still completes all promises
+// Promise.race - promise.race return promise which load first but if there is any promise rejected fisrt its return rejected promise
+// Promise.any - work as same as promise.race but only return fulfilled promise and except the rejected one.
+// lets see with example
 
-  ///////////////////////////////////////
-  // Other Promise Combinators: race, allSettled and any
-  // Promise.race
-  ; (async function () {
-    const res = await Promise.race([
-      getJSON(`https://restcountries.com/v3.1/name/egypt`),
-      getJSON(`https://restcountries.com/v3.1/name/italy`),
-      getJSON(`https://restcountries.com/v3.1/name/mexico`),
-    ]);
-    console.log(res[0]);
-  })();
+///////////////////////////////////////
+// Other Promise Combinators: race, allSettled and any
+// Promise.race
+//   ; (async function () {
+//     const res = await Promise.race([
+//       getJSON(`https://restcountries.com/v3.1/name/egypt`),
+//       getJSON(`https://restcountries.com/v3.1/name/italy`),
+//       getJSON(`https://restcountries.com/v3.1/name/mexico`),
+//     ]);
+//     console.log(res[0]);
+//   })();
 
-const timeout = function (sec) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error('Request took too long!'));
-    }, sec * 1000);
-  });
-};
+// const timeout = function (sec) {
+//   return new Promise(function (_, reject) {
+//     setTimeout(function () {
+//       reject(new Error('Request took too long!'));
+//     }, sec * 1000);
+//   });
+// };
 
-Promise.race([
-  getJSON(`https://restcountries.com/v3.1/name/italy`),
-  timeout(5),
-])
-  .then(res => console.log(res[0]))
-  .catch(err => console.error(err));
+// Promise.race([
+//   getJSON(`https://restcountries.com/v3.1/name/italy`),
+//   timeout(5),
+// ])
+//   .then(res => console.log(res[0]))
+//   .catch(err => console.error(err));
 
-// Promise.allSettled
-Promise.allSettled([
-  Promise.resolve('Success'),
-  Promise.reject('ERROR'),
-  Promise.resolve('Another success'),
-]).then(res => console.log(res));
+// // Promise.allSettled
+// Promise.allSettled([
+//   Promise.resolve('Success'),
+//   Promise.reject('ERROR'),
+//   Promise.resolve('Another success'),
+// ]).then(res => console.log(res));
 
-Promise.all([
-  Promise.resolve('Success'),
-  Promise.reject('ERROR'),
-  Promise.resolve('Another success'),
-])
-  .then(res => console.log(res))
-  .catch(err => console.error(err));
+// Promise.all([
+//   Promise.resolve('Success'),
+//   Promise.reject('ERROR'),
+//   Promise.resolve('Another success'),
+// ])
+//   .then(res => console.log(res))
+//   .catch(err => console.error(err));
 
-// Promise.any [ES2021]
-Promise.any([
-  Promise.resolve('Success'),
-  Promise.reject('ERROR'),
-  Promise.resolve('Another success'),
-])
-  .then(res => console.log(res))
-  .catch(err => console.error(err));
+// // Promise.any [ES2021]
+// Promise.any([
+//   Promise.resolve('Success'),
+//   Promise.reject('ERROR'),
+//   Promise.resolve('Another success'),
+// ])
+//   .then(res => console.log(res))
+//   .catch(err => console.error(err));
 
 
 ///////////////////////////////////////
@@ -397,3 +397,52 @@ TEST DATA: ['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']. To test, turn of
 
 GOOD LUCK 😀
 */
+
+const imageContainer = document.querySelector('.images')
+
+const createImg = function (imgPath) {
+  return new Promise(function (resolve, reject) {
+    const img = document.createElement('img');
+    
+    img.src = imgPath;
+    img.addEventListener('load', function () {
+      imageContainer.append(img);
+      resolve(img);
+    })
+    img.addEventListener('error', function () {
+      reject(new Error('Image Not Found'))
+    });
+  })
+};
+
+//Part 1
+// const loadNPause = async function () {
+//   try {
+//     let currentImg = await createImg('img/img-1.jpg')
+//     console.log('image 1 loaded')
+//     await wait(2)
+//     currentImg.style.display = 'none'
+//     currentImg = await createImg('img/img-2.jpg')
+//     console.log('image 2 loaded')
+//     await wait(2)
+//     currentImg.style.display = 'none'
+
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
+// loadNNPause()
+const loadAll = async function (imgArr) {
+  try {
+    const imgs = imgArr.map(async img => await createImg(img));
+    console.log(imgs)
+    const imgsEl = await Promise.all(imgs)
+    console.log(imgsEl)
+    imgsEl.forEach(img => img.classList.add('parallel'))
+  } catch (err) {
+    console.error(err)
+  }
+
+
+}
+loadAll(['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']);
